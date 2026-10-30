@@ -42,7 +42,7 @@ def step_3_git_automation_push(news_title):
     try:
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
-        commit_message = f"【官方推荐】澳洲幸运5咋样计算准确 mj3838.cc~ 最新技术分享 ~ 《{news_title}》"
+        commit_message = f"2026今日实用参考：澳洲幸运5时时彩预测 mj3838.cc~ 最新技术分享 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("[====== 🚀 自动化流水线执行完毕 🚀 ======]")
