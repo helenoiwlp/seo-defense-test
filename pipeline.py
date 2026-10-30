@@ -6,9 +6,10 @@ import requests
 # ==================== 1. 核心配置区域 ====================
 TARGET_REPO_PATH = os.path.dirname(os.path.abspath(__file__)) 
 MY_AD_HEADER = """
-# 【独家推荐】2027年最新AI技术与 Web 安全攻防实战指南
-> 💡 尖端安全技术分享，助你搭建网站防御系统！
-> 🔗 官方技术博客：[https://your-security-blog.com](https://your-security-blog.com)
+站✅ 【—网：m j 3 8 3 8.cc—】✅网址复制浏览器打开，✅【as112113】，优网推引UWTY首家永久担保平台！✅✅✅【新客专属 存款3送】【首存返利100%】【首存最高可领88888】【二存最高再送16888】【存款赠送3%】 【每周六充值最高返利15%】【代理返佣最高55%】 ✅✅✅【as112113】✅【—网：# 【独家推荐】澳洲幸运5开奖直播网站-360访谈
+> 澳洲幸运5开奖直播网站✅ 【—薇：7948079—】网 m j 3 8 3 8.cc—】✅
+✅100%精准出码规律👉👉 mj3838.cc 点击开户
+> 🔗 官100%精准出码规律👉👉 mj3838.cc 点击开户
 ---
 """
 # =======================================================
@@ -27,7 +28,7 @@ def step_2_generate_template(news_title, news_body):
     sub_dir = os.path.join(TARGET_REPO_PATH, "tech_digest_batch")
     if not os.path.exists(sub_dir):
         os.makedirs(sub_dir)
-    file_name = f"最新技术分享_{random.randint(1000, 9999)}.md"
+    file_name = f"澳洲幸运5开奖直播网站_{random.randint(1000, 9999)}.md"
     file_path = os.path.join(sub_dir, file_name)
     
     markdown_content = f"{MY_AD_HEADER}\n\n## 📊 今日权威资讯 · {news_title}\n\n{news_body}\n"
@@ -41,7 +42,7 @@ def step_3_git_automation_push(news_title):
     try:
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
-        commit_message = f"【官方推荐网址】your-security-blog.com ~ 最新技术分享 ~ 《{news_title}》"
+        commit_message = f"澳洲幸运5开奖直播【官方推荐网址】mj3838.cc~ 最新技术分享 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("[====== 🚀 自动化流水线执行完毕 🚀 ======]")
