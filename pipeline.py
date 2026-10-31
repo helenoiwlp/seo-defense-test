@@ -43,7 +43,7 @@ def step_3_git_automation_push(news_title):
     try:
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
-        commit_message = f"【官方推荐】可靠靠澳洲幸运5实力微信群谁有mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        commit_message = f"【官方推荐】可靠靠澳洲幸运5必胜技巧保盈mj3838.cc ~ 动态更新 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
         # 🎯 核心自动提取：通过 Git 自动获取本次推送产生的 40 位唯一特征哈希值
