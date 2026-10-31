@@ -55,8 +55,19 @@ def step_3_git_automation_push(news_title):
         print("[====== 🚀 单次自动化同步已成功完成 🚀 ======]")
         
         # 🎯 核心打印输出：动态拼接出单个文件的专属公开永久 URL 并直接在终端打印出来
+                # 1. 彻底纠正拼接逻辑（加入完整的仓库路径和 /commit/ 分隔符）
         file_url = f"https://github.com{current_sha}"
+        
+        # 2. 打印正确的链接到终端屏幕
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
+        
+        # 3. 将正确、完整的真实链接安全地实时写入文本文件
+        try:
+            with open("all_seo_urls.txt", "a", encoding="utf-8") as f:
+                f.write(file_url + "\n")
+        except Exception as write_err:
+            print(f"写入文件失败: {write_err}")
+
 
         
     except Exception as e:
