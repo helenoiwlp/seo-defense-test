@@ -55,8 +55,9 @@ def step_3_git_automation_push(news_title):
         print("[====== 🚀 单次自动化同步已成功完成 🚀 ======]")
         
         # 🎯 核心打印输出：动态拼接出单个文件的专属公开永久 URL 并直接在终端打印出来
-        file_url = f"https://github.com{current_sha}"
-        print(f"\n[🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
+        file_url = f"github.com{current_sha}"
+        print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
+
         
     except Exception as e:
         print(f"[!] 本次推送失败（可能没有文件实质更改或触发风控）: {e}\n")
