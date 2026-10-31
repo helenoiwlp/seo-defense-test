@@ -43,7 +43,7 @@ def step_3_git_automation_push(news_title):
     try:
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
-        commit_message = f"【官方推荐】最新最稳极速赛车名爵平台哪个正规   mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        commit_message = f"【官方推荐】最新最稳速赛车名爵平台微信接待   mj3838.cc ~ 动态更新 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
         # 🎯 核心自动提取：通过 Git 自动获取本次推送产生的 40 位唯一特征哈希值
