@@ -48,19 +48,28 @@ def step_3_git_automation_push(news_title):
         subprocess.run(["git", "add", "."], check=True)
         
         # 使用统一的主循环标题
-        commit_message = f"【官方推荐】澳洲幸运5信誉外围群平台微信群 mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        commit_message = f"【官方推荐】澳洲幸运5登录网址多 mj3838.cc ~ 动态更新 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
+        
+        # 🎯【核心修复 1】：将获取哈希的操作放在 commit 正下方，确保获取到当前最新的有效哈希
+        sha_result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
+        current_sha = sha_result.stdout.strip()
         
         # 推送到远程 GitHub
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("[====== 🚀 单次自动化同步已成功完成 🚀 ======]")
         
-        # 获取本次推送产生的唯一特征哈希值
-        sha_result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
-        current_sha = sha_result.stdout.strip()
+        # 🎯【核心修复 2】：动态获取当前 Git 仓库的真实远程 URL，自动解析出“用户名/仓库名”
+        remote_url_result = subprocess.run(["git", "config", "--get", "remote.origin.url"], capture_output=True, text=True, check=True)
+        remote_url = remote_url_result.stdout.strip()
         
-        # 提取并保存公开的 Commit 永久链接
-        file_url = f"https://github.com/pricerachel6165/isaxyz/commit/{current_sha}"
+        if "github.com" in remote_url:
+            repo_path = remote_url.split("github.com")[-1].replace(":", "/").replace(".git", "").strip("/")
+        else:
+            repo_path = "helenoiwlp/seo-defense-test"  # 备用兜底路径
+        
+        # 动态拼接出绝对能点开的公开 Commit 永久链接
+        file_url = f"https://github.com/{repo_path}/commit/{current_sha}"
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
         
         with open("all_seo_urls.txt", "a", encoding="utf-8") as f:
