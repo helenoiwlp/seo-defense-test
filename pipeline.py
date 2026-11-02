@@ -13,7 +13,7 @@ MY_AD_HEADER = """
 ---
 """
 
-# 🎯【新增配置】：用于批量组合的前缀、尾缀词库以及连接符
+# 🎯【配置库】：用于批量组合的前缀、尾缀词库以及连接符
 SEO_PREFIXES = ["一手指南", "一线专栏", "一线专访", "一线动向", "一线动态", "一线周刊", "一线呼声", "一线回应", "一线专题"]
 SEO_SUFFIXES = ["银瑞财经", "鸿图财经", "行业观察", "港口财经", "鼎信财经", "东京财经", "葡萄财经", "投资参考"]
 SEO_CONNECTORS = ["—", "—", "··", "!", "-", "："]
@@ -35,9 +35,9 @@ def step_2_generate_template(news_title, news_body):
     if not os.path.exists(sub_dir):
         os.makedirs(sub_dir)
         
-    # 🎯【优化】：为了防止文件名包含 Windows 不允许的特殊字符导致报错，进行安全清洗
+    # 🎯【优化】：严格清洗文件名，防止包含系统保留或不允许的特殊字符导致报错
     safe_file_title = news_title
-    for char in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "!"]:
+    for char in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "!", "：", "·"]:
         safe_file_title = safe_file_title.replace(char, "")
 
     file_name = f"{safe_file_title}_{random.randint(10000, 99999)}.md"
@@ -51,7 +51,7 @@ def step_2_generate_template(news_title, news_body):
 
 
 def step_3_git_automation_push(news_title):
-    """自动化 Git 提交流水线与链接提取"""
+    """自动化 Git 提交流水线与链接提取并自动导出"""
     print("[*] 正在向 GitHub 服务器持续同步变动...")
     try:
         os.chdir(TARGET_REPO_PATH)
@@ -78,12 +78,16 @@ def step_3_git_automation_push(news_title):
         else:
             repo_path = "helenoiwlp/seo-defense-test"  # 备用兜底路径
         
-        # 动态拼接出绝对能点开的公开 Commit 永久链接
+        # 动态拼接出公开 Commit 永久链接
         file_url = f"https://github.com/{repo_path}/commit/{current_sha}"
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
         
-        with open("all_seo_urls.txt", "a", encoding="utf-8") as f:
+        # 🎯【优化区域】：绑定绝对路径，实时、安全地导出提取到的链接到本地文本
+        log_file_path = os.path.join(TARGET_REPO_PATH, "all_seo_urls.txt")
+        with open(log_file_path, "a", encoding="utf-8") as f:
             f.write(file_url + "\n")
+            f.flush()  # 💡 强制刷入硬盘缓冲区，防止异常中断丢失数据
+        print(f"[💾 导出成功] 链接已追加写入本地文件：{log_file_path}")
             
     except Exception as e:
         print(f"[!] 本次推送失败（可能没有文件实质更改或触发风控）: {e}\n")
@@ -94,7 +98,7 @@ if __name__ == "__main__":
     print("[提示] 想要停止时，请在黑色终端里按下键盘上的 Ctrl + C 强行终止。\n")
     
     count = 1
-    filename = "词.txt"
+    filename = os.path.join(TARGET_REPO_PATH, "词.txt")
     
     while True:
         print(f"================ 正在执行第 {count} 次自动推送 ================")
@@ -112,11 +116,11 @@ if __name__ == "__main__":
             if lines:
                 core_keyword = lines[0].strip()  # 精准取出第一个词作为核心词
                 
-                # 写回剩余行，实现队列消减
+                # 写回剩余行，实现队列动态消减
                 with open(filename, "w", encoding="utf-8") as f:
                     f.writelines(lines[1:])
                 
-                # 🎯【核心修改】：将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
+                # 将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
                 p = random.choice(SEO_PREFIXES)
                 s = random.choice(SEO_SUFFIXES)
                 c1 = random.choice(SEO_CONNECTORS)
