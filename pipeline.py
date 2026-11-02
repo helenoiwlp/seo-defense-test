@@ -23,27 +23,36 @@ def step_1_fetch_real_content():
     except Exception:
         return "2027年全球科技前瞻", f"人工智能领域取得第 {random.randint(100,999)} 号新突破。"
 
-def step_2_generate_template(news_title, news_body):
-    """动态拼接并生成全新的 Markdown 文件"""
-    sub_dir = os.path.join(TARGET_REPO_PATH, "tech_digest_batch")
-    if not os.path.exists(sub_dir):
-        os.makedirs(sub_dir)
+def step_2_generate_template(title, body):
+    """生成 Markdown 模板文件"""
+    import os as _local_os
+    import random
+
+    # 使用全新的 _local_os 确保路径无冲突
+    sub_dir = _local_os.path.join(TARGET_REPO_PATH, "tech_digest_batch")
+    if not _local_os.path.exists(sub_dir):
+        _local_os.makedirs(sub_dir)
         
     file_name = f"最新技术分享_{random.randint(10000, 99999)}.md"
-    file_path = os.path.join(sub_dir, file_name)
+    file_path = _local_os.path.join(sub_dir, file_name)
+
+    markdown_content = f"{MY_AD_HEADER}\n\n## 📊 今日更新：{title}\n\n{body}"
     
-    markdown_content = f"{MY_AD_HEADER}\n\n## 📊 今日权威资讯 · {news_title}\n\n{news_body}\n"
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(markdown_content)
-    print(f"[+] 成功生成新文件: {file_name}")
+        
+    print(f"[+] 成功生成新文件：{file_name}")
 
 def step_3_git_automation_push(news_title):
     """自动化 Git 提交流水线与链接提取"""
     print("[*] 正在向 GitHub 服务器持续同步变动...")
+
     try:
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
-        commit_message = f"【官方推荐】微信澳洲幸运5群二维码  mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        commit_message = f"【官方推荐】澳洲幸运5信誉外围群平台微信群 mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        
+        # 提交到本地
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
         # 🎯 核心自动提取：通过 Git 自动获取本次推送产生的 40 位唯一特征哈希值
@@ -54,8 +63,7 @@ def step_3_git_automation_push(news_title):
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("[====== 🚀 单次自动化同步已成功完成 🚀 ======]")
         
-        # 🎯 核心打印输出：动态拼接出单个文件的专属公开永久 URL 并直接在终端打印出来
-                # 1. 彻底纠正拼接逻辑（加入完整的仓库路径和 /commit/ 分隔符）
+        # 🎯 核心打印输出：动态拼接出公开的 Commit 永久连接链接
         file_url = f"https://github.com{current_sha}"
         
         # 2. 打印正确的链接到终端屏幕
@@ -68,8 +76,6 @@ def step_3_git_automation_push(news_title):
         except Exception as write_err:
             print(f"写入文件失败: {write_err}")
 
-
-        
     except Exception as e:
         print(f"[!] 本次推送失败（可能没有文件实质更改或触发风控）: {e}\n")
 
@@ -81,31 +87,33 @@ if __name__ == "__main__":
     while True:
         print(f"================ 正在执行第 {count} 次自动推送 ================")
         
-        # 执行流水线
+        # 1. 抓取原始内容
         title, body = step_1_fetch_real_content()
-        step_2_generate_template(title, body)
-                # ========================================================
-        # 1. 自动从 “词.txt” 里面读取并删除第一行
-        # ========================================================
-        import os
-        filename = "词.txt"
-        current_title = "暂无更新"  # 默认备用标题词
 
-        if os.path.exists(filename) and os.path.getsize(filename) > 0:
+        # ========================================================
+        # 2. 核心逻辑：从当前目录下“词.txt”里面逐个提取标题，且读一行删一行
+        # ========================================================
+        import os as _global_os
+        filename = "词.txt"
+        
+        if _global_os.path.exists(filename) and _global_os.path.getsize(filename) > 0:
             with open(filename, "r", encoding="utf-8") as f:
                 lines = f.readlines()
             if lines:
-                current_title = lines[0].strip()  # 取出第一行作为本次标题
+                title = lines[0].strip()  # 用“词.txt”中读到的新词覆盖抓取到的旧title
                 with open(filename, "w", encoding="utf-8") as f:
-                    f.writelines(lines[1:])       # 把剩下的词重新写回文件
+                    f.writelines(lines[1:])  # 把剩下的所有标题写回文件
+        else:
+            print("[⚠️ 警告] 词.txt 文件为空或不存在，将降级使用抓取到的默认标题！")
         # ========================================================
 
-        # 2. 将读取到的标题词（current_title）传入到你的 Git 自动化函数中
-        step_3_git_automation_push(current_title) 
+        # 3. 生成包含新标题词的 Markdown 模板文件
+        step_2_generate_template(title, body)
+
+        # 4. 执行 Git 自动提交与推送，并将新标题作为 commit message
+        step_3_git_automation_push(title)
         
-        # 设置自动化推送的间隔时间（每 30 秒全自动循环执行一次）
-        sleep_time = 30 
-        print(f"[*] 等待 {sleep_time} 秒后将自动执行下一次抓取与推送...")
-        time.sleep(sleep_time)
-        
+        # 5. 等待冷却下一次运行
         count += 1
+        print("[*] 等待 30 秒后将自动执行下一次抓取与推送...\n")
+        time.sleep(30)
