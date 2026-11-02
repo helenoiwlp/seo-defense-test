@@ -58,7 +58,7 @@ def step_3_git_automation_push(news_title):
         subprocess.run(["git", "add", "."], check=True)
         
         # 使用统一的主循环标题
-        commit_message = f"【官方推荐】澳洲幸运5登录网址多 mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        commit_message = f" 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
         # 将获取哈希的操作放在 commit 正下方，确保获取到当前最新的有效哈希
