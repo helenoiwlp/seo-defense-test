@@ -99,3 +99,4 @@ https://github.com/helenoiwlp/seo-defense-test/commit/94cbf73f33acdd7ba8996fb788
 https://github.com/helenoiwlp/seo-defense-test/commit/8ba9a673c163df1930b9ebe8abfc8a3481dcaeb1
 https://github.com/helenoiwlp/seo-defense-test/commit/374054c96d0f48af3cf0e6435d74a56c2d5e38be
 https://github.com/helenoiwlp/seo-defense-test/commit/ef6bcf7ae522a96f3a23f420120860473df1a285
+https://github.com/helenoiwlp/seo-defense-test/commit/5d96b331b4b94c5ba39ca2e2985c441aeb51e9d0
