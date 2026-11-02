@@ -57,7 +57,7 @@ def step_3_git_automation_push(news_title):
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
         
-        # 使用统一的主循环标题
+        # 🎯【修改】：缩短后的 Commit 提交信息
         commit_message = f" 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
@@ -82,9 +82,9 @@ def step_3_git_automation_push(news_title):
         file_url = f"https://github.com/{repo_path}/commit/{current_sha}"
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
         
-        # 🎯【优化区域】：绑定绝对路径，实时、安全地导出提取到的链接到本地文本
+        # 🎯【核心修复区域】：绑定绝对路径，并将编码设置为 gbk，彻底解决 Windows 记事本乱码问题
         log_file_path = os.path.join(TARGET_REPO_PATH, "all_seo_urls.txt")
-        with open(log_file_path, "a", encoding="utf-8") as f:
+        with open(log_file_path, "a", encoding="gbk") as f:  # 💡 这里的 utf-8 已经换成了 gbk
             f.write(file_url + "\n")
             f.flush()  # 💡 强制刷入硬盘缓冲区，防止异常中断丢失数据
         print(f"[💾 导出成功] 链接已追加写入本地文件：{log_file_path}")
