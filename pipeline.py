@@ -43,7 +43,7 @@ def step_3_git_automation_push(news_title):
     try:
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
-        commit_message = f"【官方推荐】澳洲幸运5哪里玩   mj3838.cc ~ 动态更新 ~ 《{news_title}》"
+        commit_message = f"【官方推荐】微信澳洲幸运5群二维码  mj3838.cc ~ 动态更新 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
         # 🎯 核心自动提取：通过 Git 自动获取本次推送产生的 40 位唯一特征哈希值
@@ -84,7 +84,24 @@ if __name__ == "__main__":
         # 执行流水线
         title, body = step_1_fetch_real_content()
         step_2_generate_template(title, body)
-        step_3_git_automation_push(title)
+                # ========================================================
+        # 1. 自动从 “词.txt” 里面读取并删除第一行
+        # ========================================================
+        import os
+        filename = "词.txt"
+        current_title = "暂无更新"  # 默认备用标题词
+
+        if os.path.exists(filename) and os.path.getsize(filename) > 0:
+            with open(filename, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            if lines:
+                current_title = lines[0].strip()  # 取出第一行作为本次标题
+                with open(filename, "w", encoding="utf-8") as f:
+                    f.writelines(lines[1:])       # 把剩下的词重新写回文件
+        # ========================================================
+
+        # 2. 将读取到的标题词（current_title）传入到你的 Git 自动化函数中
+        step_3_git_automation_push(current_title) 
         
         # 设置自动化推送的间隔时间（每 30 秒全自动循环执行一次）
         sleep_time = 30 
