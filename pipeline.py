@@ -35,7 +35,7 @@ def step_2_generate_template(news_title, news_body):
     if not os.path.exists(sub_dir):
         os.makedirs(sub_dir)
         
-    # 🎯【优化】：严格清洗文件名，防止包含系统保留或不允许的特殊字符导致报错
+    # 严格清洗文件名，防止包含系统保留或不允许的特殊字符导致报错
     safe_file_title = news_title
     for char in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "!", "：", "·"]:
         safe_file_title = safe_file_title.replace(char, "")
@@ -43,9 +43,9 @@ def step_2_generate_template(news_title, news_body):
     file_name = f"{safe_file_title}_{random.randint(10000, 99999)}.md"
     file_path = os.path.join(sub_dir, file_name) 
 
-    # 将统一提取出的新标题动态写入文件
+    # 写入生成的文章，采用 utf-8-sig 确保本地查看不乱码
     markdown_content = f"{MY_AD_HEADER}\n\n## 📊 今日更新：{news_title}\n\n{news_body}"
-    with open(file_path, "w", encoding="utf-8") as f:
+    with open(file_path, "w", encoding="utf-8-sig") as f:
         f.write(markdown_content)
     print(f"[+] 成功生成新文件：{file_name}")
 
@@ -57,11 +57,11 @@ def step_3_git_automation_push(news_title):
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
         
-        # 🎯【修改】：缩短后的 Commit 提交信息
+        # 缩短后的 Commit 提交信息
         commit_message = f" 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
-        # 将获取哈希的操作放在 commit 正下方，确保获取到当前最新的有效哈希
+        # 获取当前最新的有效哈希
         sha_result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
         current_sha = sha_result.stdout.strip()
         
@@ -69,24 +69,24 @@ def step_3_git_automation_push(news_title):
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("[====== 🚀 单次自动化同步已成功完成 🚀 ======]")
         
-        # 动态获取当前 Git 仓库的真实远程 URL，自动解析出“用户名/仓库名”
+        # 动态获取当前 Git 仓库的真实远程 URL
         remote_url_result = subprocess.run(["git", "config", "--get", "remote.origin.url"], capture_output=True, text=True, check=True)
         remote_url = remote_url_result.stdout.strip()
         
         if "github.com" in remote_url:
             repo_path = remote_url.split("github.com")[-1].replace(":", "/").replace(".git", "").strip("/")
         else:
-            repo_path = "helenoiwlp/seo-defense-test"  # 备用兜底路径
+            repo_path = "helenoiwlp/seo-defense-test"
         
         # 动态拼接出公开 Commit 永久链接
-        file_url = f"https://github.com/{repo_path}/commit/{current_sha}"
+        file_url = f"https://github.com{repo_path}/commit/{current_sha}"
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
         
-        # 🎯【核心修复区域】：绑定绝对路径，并将编码设置为 gbk，彻底解决 Windows 记事本乱码问题
+        # 🎯【终极修复点】：改用 utf-8-sig 编码追加写入，强行压制 Windows 记事本的乱码识别
         log_file_path = os.path.join(TARGET_REPO_PATH, "all_seo_urls.txt")
-        with open(log_file_path, "a", encoding="gbk") as f:  # 💡 这里的 utf-8 已经换成了 gbk
+        with open(log_file_path, "a", encoding="utf-8-sig") as f:  
             f.write(file_url + "\n")
-            f.flush()  # 💡 强制刷入硬盘缓冲区，防止异常中断丢失数据
+            f.flush()  
         print(f"[💾 导出成功] 链接已追加写入本地文件：{log_file_path}")
             
     except Exception as e:
@@ -110,17 +110,23 @@ if __name__ == "__main__":
         # ========================================================
         # 2. 核心控制：从 词.txt 提取核心词并随机拼装组合前尾缀
         # ========================================================
+        # 💡 采用 errors='ignore' 容错，防止“词.txt”本身带有奇怪的编码导致程序崩溃
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
-            with open(filename, "r", encoding="utf-8") as f:
-                lines = f.readlines()
+            try:
+                with open(filename, "r", encoding="utf-8", errors="ignore") as f:
+                    lines = f.readlines()
+            except Exception:
+                with open(filename, "r", encoding="gbk", errors="ignore") as f:
+                    lines = f.readlines()
+
             if lines:
                 core_keyword = lines[0].strip()  # 精准取出第一个词作为核心词
                 
-                # 写回剩余行，实现队列动态消减
+                # 写回剩余行
                 with open(filename, "w", encoding="utf-8") as f:
                     f.writelines(lines[1:])
                 
-                # 将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
+                # 拼装复合标题
                 p = random.choice(SEO_PREFIXES)
                 s = random.choice(SEO_SUFFIXES)
                 c1 = random.choice(SEO_CONNECTORS)
@@ -129,13 +135,13 @@ if __name__ == "__main__":
                 final_title = f"2026{c1}{p}{c2}{core_keyword}-{s}"
                 print(f"[➔] 成功从 词.txt 提取核心词并装配复合标题: {final_title}")
         
-        # 如果文件为空、不存在或没有读到有效行，则降级使用默认标题
+        # 如果没有读到有效行，则降级使用默认标题
         if not final_title:
             final_title = default_title
             print("[⚠️] 词.txt 为空或不存在，将使用网络抓取的默认内容。")
         # ========================================================
 
-        # 3. 将全局唯一提取并拼装出来的 final_title 统一喂给生成和推送函数
+        # 3. 统一执行生成和推送
         step_2_generate_template(final_title, body)
         step_3_git_automation_push(final_title)
         
