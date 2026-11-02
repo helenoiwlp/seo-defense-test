@@ -78,25 +78,20 @@ def step_3_git_automation_push(news_title):
         else:
             repo_path = "helenoiwlp/seo-defense-test"
         
-        # 动态拼接出公开 Commit 永久链接
-        file_url = f"https://github.com{repo_path}/commit/{current_sha}"
+        # 🎯【核心修复 1】：添加了之前遗漏的斜杠 "/"，确保生成的独立链接可以完美一键点击打开
+        file_url = f"https://github.com/{repo_path}/commit/{current_sha}"
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
         
-        # ========================================================
-        # 🎯 核心优化点：直接指定输出文本为“链接.txt”
-        # ========================================================
+        # 指定输出文本为“链接.txt”
         log_file_path = os.path.join(TARGET_REPO_PATH, "链接.txt")
-        
-        # 判断文件是否是第一次创建，如果是第一次则注入 BOM 头部强压乱码
         is_new_file = not os.path.exists(log_file_path) or os.path.getsize(log_file_path) == 0
         
         with open(log_file_path, "a", encoding="utf-8") as f:  
             if is_new_file:
-                f.write("\ufeff")  # 💡 注入隐形强制不乱码标记（BOM）
+                f.write("\ufeff")  # 注入隐形强制不乱码标记（BOM）
             f.write(file_url + "\n")
             f.flush()  
         print(f"[💾 导出成功] 链接已追加写入本地文件：{log_file_path}")
-        # ========================================================
             
     except Exception as e:
         print(f"[!] 本次推送失败（可能没有文件实质更改或触发风控）: {e}\n")
@@ -104,7 +99,7 @@ def step_3_git_automation_push(news_title):
 
 if __name__ == "__main__":
     print("[=== 开启安全演练：自动流水线模拟 ===]")
-    print("[提示] 想要停止时，请在黑色终端里按下键盘上的 Ctrl + C 强行终止。\n")
+    print("[提示] 当『词.txt』内容提取完毕后，程序将自动终止退出。\n")
     
     count = 1
     filename = os.path.join(TARGET_REPO_PATH, "词.txt")
@@ -112,47 +107,56 @@ if __name__ == "__main__":
     while True:
         print(f"================ 正在执行第 {count} 次自动推送 ================")
         
-        # 1. 抓取默认数据
+        # 🎯【核心修复 2】：前置检查词库。如果文件不存在或大小为0，立刻拦截并退出
+        if not os.path.exists(filename) or os.path.getsize(filename) == 0:
+            print("\n[🛑 自动化停止] 原因：『词.txt』文件为空或不存在，所有标题已全部提取并处理完毕！")
+            break
+
+        # 抓取默认数据
         default_title, body = step_1_fetch_real_content()
         final_title = ""
 
         # ========================================================
         # 2. 核心控制：从 词.txt 提取核心词并随机拼装组合前尾缀
         # ========================================================
-        if os.path.exists(filename) and os.path.getsize(filename) > 0:
-            try:
-                with open(filename, "r", encoding="utf-8", errors="ignore") as f:
-                    lines = f.readlines()
-            except Exception:
-                with open(filename, "r", encoding="gbk", errors="ignore") as f:
-                    lines = f.readlines()
+        try:
+            with open(filename, "r", encoding="utf-8", errors="ignore") as f:
+                lines = f.readlines()
+        except Exception:
+            with open(filename, "r", encoding="gbk", errors="ignore") as f:
+                lines = f.readlines()
 
-            if lines:
-                core_keyword = lines[0].strip()  # 精准取出第一个词作为核心词
-                
-                # 写回剩余行
-                with open(filename, "w", encoding="utf-8") as f:
-                    f.writelines(lines[1:])
-                
-                # 将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
-                p = random.choice(SEO_PREFIXES)
-                s = random.choice(SEO_SUFFIXES)
-                c1 = random.choice(SEO_CONNECTORS)
-                c2 = random.choice(SEO_CONNECTORS)
-                
-                final_title = f"2026{c1}{p}{c2}{core_keyword}-{s}"
-                print(f"[➔] 成功从 词.txt 提取核心词并装配复合标题: {final_title}")
+        if lines:
+            core_keyword = lines[0].strip()  # 精准取出第一个词作为核心词
+            
+            # 写回剩余行
+            with open(filename, "w", encoding="utf-8") as f:
+                f.writelines(lines[1:])
+            
+            # 将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
+            p = random.choice(SEO_PREFIXES)
+            s = random.choice(SEO_SUFFIXES)
+            c1 = random.choice(SEO_CONNECTORS)
+            c2 = random.choice(SEO_CONNECTORS)
+            
+            final_title = f"2026{c1}{p}{c2}{core_keyword}-{s}"
+            print(f"[➔] 成功从 词.txt 提取核心词并装配复合标题: {final_title}")
         
-        # 如果文件为空、不存在或没有读到有效行，则降级使用默认标题
+        # 兜底判定
         if not final_title:
-            final_title = default_title
-            print("[⚠️] 词.txt 为空或不存在，将使用网络抓取的默认内容。")
+            print("\n[🛑 自动化停止] 没有读到有效的关键词，程序终止。")
+            break
         # ========================================================
 
         # 3. 统一执行生成和推送
         step_2_generate_template(final_title, body)
         step_3_git_automation_push(final_title)
         
+        # 🎯【核心修复 3】：再次检查剩余词库。如果刚才抹去的是最后一行，则不需要再等待，直接退出
+        if os.path.getsize(filename) == 0:
+            print("\n[🎉 完美完成] 『词.txt』中的所有标题已全部提取并成功推送到 GitHub，程序安全停止。")
+            break
+
         count += 1
-        print("[*] 等待 30 秒后将自动执行下一次抓取与推送...\n")
-        time.sleep(30)
+        print("[*] 等待 20 秒后将自动执行下一次抓取与推送...\n")
+        time.sleep(20)
