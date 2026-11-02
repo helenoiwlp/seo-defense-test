@@ -43,9 +43,9 @@ def step_2_generate_template(news_title, news_body):
     file_name = f"{safe_file_title}_{random.randint(10000, 99999)}.md"
     file_path = os.path.join(sub_dir, file_name) 
 
-    # 写入生成的文章，采用 utf-8-sig 确保本地查看不乱码
+    # 写入生成的文章
     markdown_content = f"{MY_AD_HEADER}\n\n## 📊 今日更新：{news_title}\n\n{news_body}"
-    with open(file_path, "w", encoding="utf-8-sig") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(markdown_content)
     print(f"[+] 成功生成新文件：{file_name}")
 
@@ -57,7 +57,7 @@ def step_3_git_automation_push(news_title):
         os.chdir(TARGET_REPO_PATH)
         subprocess.run(["git", "add", "."], check=True)
         
-        # 缩短后的 Commit 提交信息
+        # 简短的 Commit 提交信息
         commit_message = f" 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
@@ -82,12 +82,21 @@ def step_3_git_automation_push(news_title):
         file_url = f"https://github.com{repo_path}/commit/{current_sha}"
         print(f"[ 🔗 提取成功！本次生成的独立 SEO 链接为 ]:\n{file_url}\n")
         
-        # 🎯【终极修复点】：改用 utf-8-sig 编码追加写入，强行压制 Windows 记事本的乱码识别
-        log_file_path = os.path.join(TARGET_REPO_PATH, "all_seo_urls.txt")
-        with open(log_file_path, "a", encoding="utf-8-sig") as f:  
+        # ========================================================
+        # 🎯 核心优化点：直接指定输出文本为“链接.txt”
+        # ========================================================
+        log_file_path = os.path.join(TARGET_REPO_PATH, "链接.txt")
+        
+        # 判断文件是否是第一次创建，如果是第一次则注入 BOM 头部强压乱码
+        is_new_file = not os.path.exists(log_file_path) or os.path.getsize(log_file_path) == 0
+        
+        with open(log_file_path, "a", encoding="utf-8") as f:  
+            if is_new_file:
+                f.write("\ufeff")  # 💡 注入隐形强制不乱码标记（BOM）
             f.write(file_url + "\n")
             f.flush()  
         print(f"[💾 导出成功] 链接已追加写入本地文件：{log_file_path}")
+        # ========================================================
             
     except Exception as e:
         print(f"[!] 本次推送失败（可能没有文件实质更改或触发风控）: {e}\n")
@@ -110,7 +119,6 @@ if __name__ == "__main__":
         # ========================================================
         # 2. 核心控制：从 词.txt 提取核心词并随机拼装组合前尾缀
         # ========================================================
-        # 💡 采用 errors='ignore' 容错，防止“词.txt”本身带有奇怪的编码导致程序崩溃
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
             try:
                 with open(filename, "r", encoding="utf-8", errors="ignore") as f:
@@ -126,7 +134,7 @@ if __name__ == "__main__":
                 with open(filename, "w", encoding="utf-8") as f:
                     f.writelines(lines[1:])
                 
-                # 拼装复合标题
+                # 将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
                 p = random.choice(SEO_PREFIXES)
                 s = random.choice(SEO_SUFFIXES)
                 c1 = random.choice(SEO_CONNECTORS)
@@ -135,7 +143,7 @@ if __name__ == "__main__":
                 final_title = f"2026{c1}{p}{c2}{core_keyword}-{s}"
                 print(f"[➔] 成功从 词.txt 提取核心词并装配复合标题: {final_title}")
         
-        # 如果没有读到有效行，则降级使用默认标题
+        # 如果文件为空、不存在或没有读到有效行，则降级使用默认标题
         if not final_title:
             final_title = default_title
             print("[⚠️] 词.txt 为空或不存在，将使用网络抓取的默认内容。")
