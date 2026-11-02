@@ -12,6 +12,11 @@ MY_AD_HEADER = """
 > 🔗 ✅【as112113】，优网推引UWTY首家永久担保平台！✅✅✅【新客专属 存款3送】【首存返利100%】【首存最高可领88888】【二存最高再送16888】【存款赠送3%】 【每周周六充值最高返利15%】【代理返佣最高55%】 ✅✅✅【as112113】✅【—网：m j 3 8 3 8.cc—】✅
 ---
 """
+
+# 🎯【新增配置】：用于批量组合的前缀、尾缀词库以及连接符
+SEO_PREFIXES = ["一手指南", "一线专栏", "一线专访", "一线动向", "一线动态", "一线周刊", "一线呼声", "一线回应", "一线专题"]
+SEO_SUFFIXES = ["银瑞财经", "鸿图财经", "行业观察", "港口财经", "鼎信财经", "东京财经", "葡萄财经", "投资参考"]
+SEO_CONNECTORS = ["—", "—", "··", "!", "-", "："]
 # =======================================================
 
 def step_1_fetch_real_content():
@@ -30,7 +35,12 @@ def step_2_generate_template(news_title, news_body):
     if not os.path.exists(sub_dir):
         os.makedirs(sub_dir)
         
-    file_name = f"最新技术分享_{random.randint(10000, 99999)}.md"
+    # 🎯【优化】：为了防止文件名包含 Windows 不允许的特殊字符导致报错，进行安全清洗
+    safe_file_title = news_title
+    for char in ["<", ">", ":", '"', "/", "\\", "|", "?", "*", "!"]:
+        safe_file_title = safe_file_title.replace(char, "")
+
+    file_name = f"{safe_file_title}_{random.randint(10000, 99999)}.md"
     file_path = os.path.join(sub_dir, file_name) 
 
     # 将统一提取出的新标题动态写入文件
@@ -51,7 +61,7 @@ def step_3_git_automation_push(news_title):
         commit_message = f"【官方推荐】澳洲幸运5登录网址多 mj3838.cc ~ 动态更新 ~ 《{news_title}》"
         subprocess.run(["git", "commit", "-m", commit_message], check=True)
         
-        # 🎯【核心修复 1】：将获取哈希的操作放在 commit 正下方，确保获取到当前最新的有效哈希
+        # 将获取哈希的操作放在 commit 正下方，确保获取到当前最新的有效哈希
         sha_result = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
         current_sha = sha_result.stdout.strip()
         
@@ -59,7 +69,7 @@ def step_3_git_automation_push(news_title):
         subprocess.run(["git", "push", "origin", "main"], check=True)
         print("[====== 🚀 单次自动化同步已成功完成 🚀 ======]")
         
-        # 🎯【核心修复 2】：动态获取当前 Git 仓库的真实远程 URL，自动解析出“用户名/仓库名”
+        # 动态获取当前 Git 仓库的真实远程 URL，自动解析出“用户名/仓库名”
         remote_url_result = subprocess.run(["git", "config", "--get", "remote.origin.url"], capture_output=True, text=True, check=True)
         remote_url = remote_url_result.stdout.strip()
         
@@ -90,26 +100,40 @@ if __name__ == "__main__":
         print(f"================ 正在执行第 {count} 次自动推送 ================")
         
         # 1. 抓取默认数据
-        title, body = step_1_fetch_real_content()
+        default_title, body = step_1_fetch_real_content()
+        final_title = ""
 
         # ========================================================
-        # 2. 核心控制：【唯一】的一处读取并删除第一行新标题逻辑
+        # 2. 核心控制：从 词.txt 提取核心词并随机拼装组合前尾缀
         # ========================================================
         if os.path.exists(filename) and os.path.getsize(filename) > 0:
             with open(filename, "r", encoding="utf-8") as f:
                 lines = f.readlines()
             if lines:
-                title = lines[0].strip()  # 精准取出第一个词覆盖原标题
+                core_keyword = lines[0].strip()  # 精准取出第一个词作为核心词
+                
+                # 写回剩余行，实现队列消减
                 with open(filename, "w", encoding="utf-8") as f:
-                    f.writelines(lines[1:])  # 瞬间将剩余内容重写回文件
-                print(f"[➔] 成功从 词.txt 提取新标题: {title}")
-        else:
+                    f.writelines(lines[1:])
+                
+                # 🎯【核心修改】：将核心词与前缀、尾缀、年份和随机符号进行交叉拼装
+                p = random.choice(SEO_PREFIXES)
+                s = random.choice(SEO_SUFFIXES)
+                c1 = random.choice(SEO_CONNECTORS)
+                c2 = random.choice(SEO_CONNECTORS)
+                
+                final_title = f"2026{c1}{p}{c2}{core_keyword}-{s}"
+                print(f"[➔] 成功从 词.txt 提取核心词并装配复合标题: {final_title}")
+        
+        # 如果文件为空、不存在或没有读到有效行，则降级使用默认标题
+        if not final_title:
+            final_title = default_title
             print("[⚠️] 词.txt 为空或不存在，将使用网络抓取的默认内容。")
         # ========================================================
 
-        # 3. 将全局唯一提取出来的 title 统一喂给生成和推送函数
-        step_2_generate_template(title, body)
-        step_3_git_automation_push(title)
+        # 3. 将全局唯一提取并拼装出来的 final_title 统一喂给生成和推送函数
+        step_2_generate_template(final_title, body)
+        step_3_git_automation_push(final_title)
         
         count += 1
         print("[*] 等待 30 秒后将自动执行下一次抓取与推送...\n")
